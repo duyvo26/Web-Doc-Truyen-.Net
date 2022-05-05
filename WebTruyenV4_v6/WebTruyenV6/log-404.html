@@ -1,0 +1,299 @@
+-- Câu 1
+
+--Tao CSDL
+CREATE DATABASE hoc_01_11
+   ON (NAME = 'hoc_01_11',
+   FILENAME = 'D:\HOCLAPTRINH\database\hoc_01_11\hoc_01_11_dat.mdf',
+   SIZE = 10MB, MAXSIZE = 20480MB,
+   FILEGROWTH = 10MB)
+LOG ON (NAME = 'hoc_01_11_log',
+   FILENAME = 'D:\HOCLAPTRINH\database\hoc_01_11\hoc_01_11_log.ldf',
+   SIZE = 5MB, MAXSIZE = 200MB,
+   FILEGROWTH = 10MB)
+--------------------------------------------------------------------------------------------
+ use hoc_01_11
+
+ CREATE TABLE MATHANG(
+	MaMH int PRIMARY KEY,
+	TenMH nvarchar(50) NOT NULL,
+)
+
+ CREATE TABLE BANHANG(
+	MaHD int PRIMARY KEY,
+	MaMH int NOT NULL,
+	NgayHD DATETIME NOT NULL,
+	SL FLOAT NOT NULL,
+	DonGia FLOAT NOT NULL,
+
+	constraint fk_BH_MH foreign key (MaMH) REFERENCES MATHANG (MaMH)
+)
+
+
+
+create proc CapNhatMatHang(
+@MaMH int,
+@TenMH nvarchar(50)
+)
+as
+begin
+update MATHANG set TenMH = @TenMH where MaMH = @MaMH
+end;
+
+-- 3
+alter function FunMH(
+@MaMH int
+)
+returns FLOAT
+as
+begin
+DECLARE @kq FLOAT;
+
+set @kq = (select sum(SL * DonGia) from BANHANG where MaMH = @MaMH) 
+
+return @kq
+end;
+
+select dbo.FunMH(1)
+
+-- 4
+
+create proc MatHangBan (
+@MaHD int
+)
+as
+begin
+select SUM(SL) 'Tong so mat hang da ban' from BANHANG where MaHD = @MaHD
+end;
+
+exec MatHangBan 1
+
+-- 5
+alter proc XoaMatHang 
+as
+begin
+delete from BANHANG where Sl < 10
+end;
+
+-- 6
+alter table BANHANG add TT float 
+select * from BANHANG
+update BANHANG set TT = SL * DonGia
+
+-- 7
+select * from BANHANG
+insert into BANHANG(MaHD, MaMH, NgayHD, SL, DonGia) values (4, 3, '1-11-2021', 99 , 100000)
+
+create view MatHangTong
+as
+select BANHANG.MaMH, MATHANG.TenMH, BANHANG.NgayHD, BANHANG.MaHD from MATHANG inner join BANHANG on MATHANG.MaMH = BANHANG.MaMH
+where BANHANG.NgayHD =  '1-11-2021'
+;
+select * from MatHangTong
+
+-- 8
+create proc NhapMatHang(
+@MaMH int,
+@TenMH nvarchar(50)
+)
+as
+begin
+insert into MATHANG(MaMH, TenMH) values (@MaMH, @TenMH)
+end;
+exec NhapMatHang 1 , N'Gạo'
+exec NhapMatHang 2 , N'Bánh'
+exec NhapMatHang 3 , N'Nước có ga'
+exec NhapMatHang 4 , N'Nước ngọc'
+exec NhapMatHang 5 , N'Trà'
+select * from BANHANG
+
+-- 9
+create proc XoaMatHang (
+@MaMH int
+)
+as
+begin
+delete from MATHANG where MaMH = @MaMH
+end;
+
+-- Câu 2
+
+alter proc SoDaoNguoc(
+@number int
+)
+as
+begin
+DECLARE @i INT = 0 ;
+DECLARE @kq INT = 0 ;
+WHILE @number > 0
+BEGIN
+ SET @i = @number  % 10;
+ SET @kq = @kq * 10 + @i;
+ SET @number = @number / 10;
+END
+print @kq
+end;
+
+exec SoDaoNguoc 1234
+
+
+-- 2
+alter function UocN(
+@number int
+)
+returns varchar
+as
+begin
+
+DECLARE @i INT = 1 ;
+DECLARE @kq varchar = 0 ;
+
+WHILE @i < @number
+BEGIN
+if @number % @i  = 0
+begin
+set @kq = CAST(@i AS varchar);
+end
+SET @i = @i + 1;
+END
+return @kq;
+end
+
+select dbo.UocN(6)
+
+select 6 % 2
+
+------------------
+create proc UocN2(
+@number int
+)
+as
+begin
+
+DECLARE @i INT = 1 ;
+DECLARE @kq varchar = 0 ;
+
+WHILE @i < @number
+BEGIN
+if @number % @i  = 0
+begin
+set @kq = CAST(@i AS varchar);
+print @kq;
+end
+SET @i = @i + 1;
+END
+end
+
+exec UocN2 8
+
+
+
+--- kiem tra
+ --Tao CSDL
+CREATE DATABASE QLHH 
+   ON (NAME = 'QLHH',
+   FILENAME = 'D:\HOCLAPTRINH\database\hoc_01_11\QLHH_dat.mdf',
+   SIZE = 10MB, MAXSIZE = 20480MB,
+   FILEGROWTH = 10MB)
+LOG ON (NAME = 'QLHH_log',
+   FILENAME = 'D:\HOCLAPTRINH\database\hoc_01_11\QLHH_log.ldf',
+   SIZE = 5MB, MAXSIZE = 200MB,
+   FILEGROWTH = 10MB)
+------------------------------------
+use QLHH
+
+ CREATE TABLE KHACHHANG(
+	MaKH int PRIMARY KEY,
+    HoTenKH nvarchar(50) NOT NULL,
+    DiaChiKH nvarchar(50) NOT NULL,
+)
+
+ CREATE TABLE BANHANG(
+	MaHD int PRIMARY KEY,
+	MaKH int NOT NULL,
+	NgayHD DATETIME NOT NULL,
+	SL FLOAT NOT NULL,
+	DonGia FLOAT NOT NULL,
+
+	constraint fk_BH_MH foreign key (MaKH) REFERENCES KHACHHANG (MaKH)
+	on delete cascade on update cascade,
+)
+
+select * from KHACHHANG 
+
+insert into KHACHHANG(MaKH, HoTenKH, DiaChiKH) values ('1', N'Nguyễn Văn A', N'Cần thơ');
+insert into KHACHHANG(MaKH, HoTenKH, DiaChiKH) values ('2', N'Nguyễn Văn B', N'Vĩnh long');
+
+select * from BANHANG 
+insert into BANHANG(MaHD, MaKH, NgayHD, SL, DonGia) values ('1', '1', '1-12-2021', 9, 100);
+insert into BANHANG(MaHD, MaKH, NgayHD, SL, DonGia) values ('2', '2', '5-12-2021', 12, 20);
+
+
+--2
+create proc ProcKH (@MaKH int)
+as
+begin
+select * from KHACHHANG 
+end;
+
+
+--3
+
+(select   from KHACHHANG inner join BANHANG on KHACHHANG.MaKH = BANHANG.MaKH where BANHANG.SL > 100)
+
+update BANHANG set DonGia = DonGia * 0.1 where SL > 100 
+
+create proc GiamGia
+as
+begin
+update BANHANG set DonGia = DonGia * 0.1 where SL > 100 
+end;
+
+-- 4
+alter proc SumHoaDon (@MaKH int)
+as
+begin
+select count(*) from BANHANG where MaKH = @MaKH
+end;
+
+exec SumHoaDon 1
+
+-- 5 
+create proc DiaChi (
+@DiaChiKH nvarchar(50)
+)
+as
+begin
+select * from KHACHHANG where DiaChiKH = @DiaChiKH
+end;
+
+exec DiaChi N'Cần thơ'
+
+
+alter proc TinhN (@n float)
+as
+declare @i float, @Tong float, @j float, @t float
+set @i = 1; set @Tong = 0; set @j = 1; set @t = 1;
+while (@i <= @n)
+begin
+if (@i != 1)
+begin
+while (@j <= @i)
+begin
+set @t = @t * @j
+set @j = @j + 1
+end
+set @Tong = @Tong * (@i / @t)
+end
+else
+begin 
+set @Tong = @Tong + 1
+end
+set @i = @i + 1
+end
+print 'KQ: ' + cast (@Tong as char(10))
+
+
+exec TinhN 2
+
+
+

@@ -1,0 +1,437 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="NguoiDung.master.cs" Inherits="WebTruyenV6.Theme.NguoiDung" %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head runat="server">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+      <!-- css -->
+      <link href="~/public/css/bootstrap.min.css" rel="stylesheet" />
+      <div id="theme-css">
+         <link href="~/public/css/style-dark.css" rel="stylesheet" />
+      </div>
+      <link href="~/Public/css/menu.css" rel="stylesheet" />
+      <!-- js -->
+      <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/jquery-3.5.1.slim.min.js"></script>
+      <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/showmoreless.js"></script>
+      <script src="<%=WebTruyenV6.Code.HeThong.url() %>/Scripts/ckeditor/ckeditor.js"></script>
+      <script src="<%=WebTruyenV6.Code.HeThong.url() %>/Scripts/ckfinder/ckfinder.js"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css" />
+      <asp:ContentPlaceHolder ID="head" runat="server"> </asp:ContentPlaceHolder>
+   </head>
+   <% if (quyen_han > 0) { %>
+   <nav-admin>
+      <div class="topnav">
+         <a class="active" href="/cp-admin/">Trang Quản trị&nbsp;<i class="bi bi-ui-checks-grid"></i></a>
+         <%if (Convert.ToInt32(quyen_han) == 2) { %>
+         <div class="dropdown">
+            <span>Người dùng&nbsp;<i class="bi bi-people-fill"></i></span>
+            <div class="dropdown-content">
+               <ul>
+                  <li><a href="/cp-admin/nguoidung/them">Thêm mới</a></li>
+                  <li><a href="/cp-admin/nguoidung/danhsach">Danh sách người dùng</a></li>
+               </ul>
+            </div>
+         </div>
+         <%} %>
+         <div class="dropdown">
+            <span>Truyện&nbsp;<i class="bi bi-journal-text"></i></span>
+            <div class="dropdown-content">
+               <ul>
+                  <li><a href="/cp-admin/truyen/themtruyen">Thêm mới</a></li>
+                  <li><a href="/cp-admin/truyen/danhsach">Danh sách truyện</a></li>
+                  <li><a href="/cp-admin/truyen/binhluan">Danh sách bình luận</a></li>
+                  <li><a href="/cp-admin/truyen/thuvien">Danh sách mua truyện</a></li>
+                  <li><a href="/cp-admin/truyen/danhgia">Danh sách đánh giá</a></li>
+               </ul>
+            </div>
+         </div>
+         <div class="dropdown">
+            <span>Thể loại&nbsp;<i class="bi bi-list-nested"></i></span>
+            <div class="dropdown-content">
+               <ul>
+                  <li><a href="/cp-admin/theloai/danhsach">Danh sách thể loại</a></li>
+               </ul>
+            </div>
+         </div>
+      </div>
+   </nav-admin>
+   <% } %>
+   <!-- Thong bao -->
+   <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+         <img width="100%" height="100%" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/noti/<%=listCauHinh.img_nen %>" style="position: fixed; top: 0px;" />
+         <div class="d-flex justify-content-center">
+            <strong id="noti" style="color: black; background: #e7e3e399; position: fixed; padding: 2%; border-radius: 10px 10px 10px;"></strong>
+         </div>
+         <img class="nhanvat" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/noti/<%=listCauHinh.img_nhanvat %>" />
+         <img class="notichu" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/noti/<%=listCauHinh.img_chu %>" />
+      </div>
+   </div>
+   <script>
+       var modal = document.getElementById("myModal");
+       var noti = document.getElementById("noti");
+
+       function set_maunens() {
+           if (getCookie("background") == "black") {
+               document.getElementById("theme-css").innerHTML = "<link href='../Public/css/style.css' rel='stylesheet' />";
+               document.getElementById("meunen").innerHTML = '<i class="bi bi-droplet"></i> ' + "Dark Mode";
+           } else if (getCookie("background") == "white") {
+               document.getElementById("theme-css").innerHTML = "<link href='../Public/css/style-dark.css' rel='stylesheet' />";
+               document.getElementById("meunen").innerHTML = '<i class="bi bi-droplet-fill"></i> ' + "White Mode";
+           } else {
+               document.getElementById("theme-css").innerHTML = "<link href='../Public/css/style.css' rel='stylesheet' />";
+               document.getElementById("meunen").innerHTML = '<i class="bi bi-droplet-fill"></i> ' + "Dark Mode";
+               setCookie("background", "black", 30);
+               location.reload();
+           }
+       }
+
+       function set_maunen(maunen) {
+           if (getCookie("background") == "black") {
+               setCookie("background", "white", 30);
+           } else {
+               setCookie("background", "black", 30);
+           }
+           set_maunens("");
+       }
+
+       function sukien() {
+           if (getCookie("sukien") == "true") {
+               document.getElementById("sukien").innerHTML = "<i class='bi bi-calendar2-range'></i>&nbsp;Tắt sự kiện";
+           } else if (getCookie("sukien") == "false") {
+               document.getElementById("sukien").innerHTML = "<i class='bi bi-calendar2-range'></i>&nbsp;Bật sự kiện";
+           } else {
+               setCookie("sukien", "true", 30);
+           }
+           sukien_tet();
+       }
+       function set_sukien() {
+           if (getCookie("sukien") == "true") {
+               document.getElementById("sukien").innerHTML = "<i class='bi bi-calendar2-range'></i>&nbsp;Bật sự kiện";
+               setCookie("sukien", "false", 30);
+           } else if (getCookie("sukien") == "false") {
+               document.getElementById("sukien").innerHTML = "<i class='bi bi-calendar2-range'></i>&nbsp;Tắt sự kiện";
+               setCookie("sukien", "true", 30);
+           }
+           location.reload();
+       }
+
+       window.onload = function () {
+           set_maunens("");
+           sukien();
+       };
+
+       function setCookie(cname, cvalue, exdays) {
+           const d = new Date();
+           d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+           let expires = "expires=" + d.toUTCString();
+           document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+       }
+
+       function getCookie(cname) {
+           let name = cname + "=";
+           let decodedCookie = decodeURIComponent(document.cookie);
+           let ca = decodedCookie.split(";");
+           for (let i = 0; i < ca.length; i++) {
+               let c = ca[i];
+               while (c.charAt(0) == " ") {
+                   c = c.substring(1);
+               }
+               if (c.indexOf(name) == 0) {
+                   return c.substring(name.length, c.length);
+               }
+           }
+           return "";
+       }
+   </script>
+   <div class="container" style="height: 180px;">
+      <!-- Content here -->
+      <nav class="navbar justify-content-between">
+         <a class="navbar-brand" href="/">
+         <img
+            class="d-inline-block align-top logo"
+            height="75"
+            width="280"
+            src=" <%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/logo/<%= listCauHinh.logo_web %>"
+            onError="this.onerror=null;this.src='<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/logoerr.jpg';"
+            />
+         </a>
+      </nav>
+      <div class="d-flex justify-content-end">
+         <!-- nut tim kiem -->
+         <% if (Request.Cookies["Log"] != null){ %>
+         <div class="item_nav" title="Tìm kiếm">
+            <a href=" <%=WebTruyenV6.Code.HeThong.url() %>/timkiemtruyen">
+               <h1><i class="bi bi-search"></i></h1>
+            </a>
+            <div style="font-size: 70%; text-align: center;">Search</div>
+         </div>
+         <div class="item_nav" title="Thông báo">
+            <span class="badge badge-danger" style="position: absolute;font-weight: 500;margin-left: 35px;">
+            <% if(NguoiDungs != null){ %>
+            <%=WebTruyenV6.Code.NguoiDung.DemThongBao(NguoiDungs.id_user) %>
+            <% } %>
+            </span>
+            <a href=" <%=WebTruyenV6.Code.HeThong.url() %>/taiKhoan/thongbao">
+               <h1><i class="bi bi-bell"></i></h1>
+            </a>
+            <div style="font-size: 70%; text-align: center;">Thông báo</div>
+         </div>
+         <% } %>
+         <!-- nut tim kiem -->
+         <!-- nut nguoi dung -->
+         <div class="item_nav" title="Người dùng">
+            <div class="dropdown show" style="color: #2e2626;margin-left:-20px; margin-right:10px;">
+               <% if (Request.Cookies["Log"] != null){ %>
+               <h5><span class="badge badge-success" style="position: absolute; font-weight: 500;"><%=TaiKhoan %></span></h5>
+               <% } %>
+               <h1 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-person-square"></i></h1>
+               <!-- <img src=" <%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/user.png" width="40"  href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  -->
+               <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                  <% if (Request.Cookies["Log"] != null){ %>
+                  <a style="text-align: left;" class="dropdown-item" href="<%=WebTruyenV6.Code.HeThong.url() %>/taikhoan/info">Thông tin tài khoản</a>
+                  <a style="text-align: left;" class="dropdown-item" href="<%=WebTruyenV6.Code.HeThong.url() %>/taikhoan/thuviendoc">Thư viện đọc</a>
+                  <a style="text-align: left;" class="dropdown-item" href="<%=WebTruyenV6.Code.HeThong.url() %>/taikhoan/info?DangXuat=true">Đăng xuất</a>
+                  <% } else { %>
+                  <a style="text-align: left;" class="dropdown-item" href="<%=WebTruyenV6.Code.HeThong.url() %>/dangnhap">Đăng nhập</a>
+                  <a style="text-align: left;" class="dropdown-item" href="<%=WebTruyenV6.Code.HeThong.url() %>/dangky">Đăng ký</a>
+                  <% } %>
+               </div>
+            </div>
+         </div>
+         <div class="item_nav" title="Menu">
+            <h1><i class="bi bi-menu-button-wide-fill" data-toggle="modal" data-target="#bt_menu" title="Menu"></i></h1>
+            <div style="font-size: 70%; text-align: center;">Menu</div>
+         </div>
+      </div>
+   </div>
+   <!-- Thong bao -->
+   <body>
+      <form id="form1" runat="server">
+         <div class="container">
+            <asp:ContentPlaceHolder ID="PhanNoiDung" runat="server"> </asp:ContentPlaceHolder>
+         </div>
+      </form>
+   </body>
+   <!-- Footer -->
+   <footer class="container bg-dark text-center text-white">
+      <!-- Grid container -->
+      <div class="container p-4" style="background-color: #232323;">
+         <!-- Section: Text -->
+         <section class="mb-4">
+            <div class="row">
+               <!-- Thanh ben trai -->
+               <div class="col-sm-6" style="background-color: #232323;">
+                  <center>LIÊN KẾT MẠNG XÃ HỘI</center>
+                  <ul class="icon-footer">
+                     <li>
+                        <a target="_blank" href="<%= listCauHinh.lh_fb %>">
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/fb.png" />
+                        &#160;Facebook
+                        </a>
+                     </li>
+                     <li>
+                        <a target="_blank" href="<%= listCauHinh.lh_itg %>">
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/instagram.png" />
+                        &#160;Instagram
+                        </a>
+                     </li>
+                     <li>
+                        <a target="_blank" href="<%= listCauHinh.lh_zalo %>">
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/zalo.png" />
+                        &#160;Zalo
+                        </a>
+                     </li>
+                  </ul>
+               </div>
+               <!--end thanh ben trai -->
+               <!-- Thanh ben phai -->
+               <div class="col-sm-6" style="background-color: #232323;">
+                  <center>LIÊN HỆ</center>
+                  <ul class="icon-footer">
+                     <li>
+                        <a href="tel:<%= listCauHinh.sdt_lh %>">
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/phone.png" />
+                        Hotline:&#160;<%= listCauHinh.sdt_lh %>
+                        </a>
+                     </li>
+                     <li>
+                        <a href="<%= listCauHinh.email_lh %>">
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/mail.png" />
+                        Mail:&#160;<%= listCauHinh.email_lh %>
+                        </a>
+                     </li>
+                     <li>
+                        <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/address.png" />
+                        Address:&#160;<%= listCauHinh.diachi_lh %>
+                     </li>
+                  </ul>
+               </div>
+               <!-- END Thanh ben phai -->
+            </div>
+         </section>
+         <!-- Section: Text -->
+      </div>
+      <!-- Grid container -->
+      <!-- Copyright -->
+      <div class="text-center p-3" style="background-color: #373737e6;">
+         <a class="text-white" href="/"><%= listCauHinh.copyright %></a>
+      </div>
+      <!-- Copyright -->
+   </footer>
+   <!-- Footer -->
+   <!-- js -->
+   <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/multi_item.js"></script>
+   <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/popper.min.js"></script>
+   <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/bootstrap.min.js"></script>
+   <script src="<%=WebTruyenV6.Code.HeThong.url() %>/public/js/theme.js"></script>
+   <!-- menu -->
+   <div class="modal right fade" id="bt_menu" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h2>
+                  <strong>KDA STUDIO</strong>
+               </h2>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+               </button>
+            </div>
+            <div class="modal-body">
+               <ul>
+                  <li>
+                     <a style="border-bottom: 1px solid #ffffff; border-top: 1px solid #ffffff;" href="/">Trang chủ</a>
+                  </li>
+                  <li>
+                     <a style="border-bottom: 1px solid #ffffff; border-top: 1px solid #ffffff;" href="../napcoin">Liên hệ - Nạp tiền </a>
+                  </li>
+                  <li>
+                     <a style="border-bottom: 1px solid #ffffff; border-top: 1px solid #ffffff;" href="../thongtin">Thông tin trang</a>
+                  </li>
+                  <hr />
+                  <div class="dropdown">
+                     <div class="dropdown-toggle" style="color: black; font-weight: 900;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Cài đặt
+                     </div>
+                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="text-align: center; font-size: 18px;">
+                        <div onclick="set_maunen('')" style="color: white; padding: 10px;">
+                           <div id="meunen"></div>
+                        </div>
+                        <div onclick="set_sukien()" style="color: white; padding: 10px;">
+                           <div id="sukien"></div>
+                        </div>
+                     </div>
+                  </div>
+               </ul>
+            </div>
+         </div>
+      </div>
+   </div>
+   <!-- nut quay lai dau trang -->
+   <!-- thanh menu duoi  -->
+   <div class="thanh-menu hidden" id="thanh-menu">
+      <div class="container" style="margin-top: 5px;">
+         <% if (quyen_han != 0) { %>
+         <div class="d-flex justify-content-center">
+            <a href="<%=WebTruyenV6.Code.HeThong.url() %>/">
+            <button type="button" class="btn btn-menu" title="Trang Chủ">
+            <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/home-b.png" />
+            </button>
+            </a>
+            <a href="<%=WebTruyenV6.Code.HeThong.url() %>/timkiemtruyen">
+            <button type="button" class="btn btn-menu" title="Tìm Kiếm Truyện">
+            <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/search.png" />
+            </button>
+            </a>
+            <a href="<%=WebTruyenV6.Code.HeThong.url() %>/taikhoan/thuviendoc">
+            <button type="button" class="btn btn-menu" title="Thư Viện Đọc">
+            <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/thu-vien.png" />
+            </button>
+            </a>
+            <a href="<%=WebTruyenV6.Code.HeThong.url() %>/taikhoan/info">
+            <button type="button" class="btn btn-menu" title="Thông Tin Người Dùng">
+            <img class="icon_footer" width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/user.png" />
+            </button>
+            </a>
+         </div>
+         <% } %>
+      </div>
+   </div>
+   <!-- end thanh menu duoi  -->
+   <!-- go top -->
+   <button type="button" class="btn btn-menu top" id="top" title="Go top" style="visibility: hidden;">
+   <img width="40" src="<%=WebTruyenV6.Code.HeThong.url() %>/public/img/www/top-icon/go-top.png" onclick="gotop()" />
+   </button>
+</html>
+<style>
+   @media only screen and (max-width: 426px) {
+   .item_nav {
+   margin-left: 10px;
+   margin-right: 10px;
+   }
+   }
+</style>
+<% try { if (listCauHinh.event_noel == "true" && Request.Cookies["sukien"].Value == "true") { %>
+<!-- code js noel -->
+<!-- code mung noel -->
+<style>
+   #e_itexpress_left {
+   display: none;
+   position: fixed;
+   z-index: 9999;
+   top: 0;
+   left: 0;
+   width: 8%;
+   }
+   #e_itexpress_right {
+   display: none;
+   position: fixed;
+   z-index: 9999;
+   top: 0;
+   right: 0;
+   width: 8%;
+   }
+   #e_itexpress_bottom_left {
+   display: none;
+   position: fixed;
+   z-index: 9999;
+   bottom: 20px;
+   left: 20px;
+   }
+   @media (min-width: 992px) {
+   #e_itexpress_left,
+   #e_itexpress_right,
+   #e_itexpress_footer,
+   #e_itexpress_bottom_left {
+   display: block;
+   }
+   }
+</style>
+<img id="e_itexpress_left" src="../Public/img/noel/topleft.png" />
+<img id="e_itexpress_right" src="../Public/img/noel/topright.png" />
+<img id="e_itexpress_bottom_left" src="../Public/img/noel/bottomleft.png" />
+<!-- code mung noel -->
+<script src="../Public/js/noel.js"></script>
+<!-- code js noel -->
+<% } } catch { } %> <% try { if (listCauHinh.event_tet == "true" && Request.Cookies["sukien"].Value == "true") { %>
+<style>
+   .img_tet{
+   display: none;
+   }
+   @media (min-width: 992px) {
+   .img_tet {
+   display: block;
+   }
+   }    
+</style>
+<!-- code js tet  -->
+<img  class="img_tet"  style="position: fixed; z-index: 99999; top: 0; left: 0;width:7%" src="../public/img/tet/topleft.png" />
+<img class="img_tet"   style="position: fixed; z-index: 99999; top: 0; right: 0; width:7%" src="../public/img/tet/topright.png" />
+<!--
+<div  class="img_tet"  style="position: fixed; z-index: 99999; bottom: -50px; left: 0; width:7%; height: 104px; background: url(https://...) repeat-x bottom left;"></div>
+<img class="img_tet"   style="position: fixed; z-index: 99999; bottom: 0px; left: 0px;width:10%" src="../public/img/tet/bottomleft.png" />
+    -->
+<script src="../Public/js/phaohoa.js"></script>
+<!-- code js tet  -->
+<% } } catch { } %>
